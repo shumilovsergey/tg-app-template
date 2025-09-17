@@ -68,47 +68,7 @@ REDIS_URL = f"redis://{REDIS_CONTAINER_NAME}:{REDIS_PORT}/0"
 # Optional Configuration
 SHUMILOV_WEBSITE = os.getenv('SHUMILOV_WEBSITE', 'https://sh-development.ru')
 
-# CORS Configuration
-def parse_cors_origins() -> list:
-    """Parse CORS origins from environment variable"""
-    cors_origins = []
-
-    # Always include the frontend URL (required)
-    cors_origins.extend([
-        FRONT_URL,
-        FRONT_URL.rstrip('/'),  # Without trailing slash
-    ])
-
-    # Add default development origins
-    cors_origins.extend([
-        'http://localhost:8080',
-        'http://127.0.0.1:8080',
-        'https://localhost:8080',
-        'http://localhost:3000',  # Common React dev server
-        'http://127.0.0.1:3000',
-        'http://localhost:5173',  # Vite dev server
-        'http://127.0.0.1:5173'
-    ])
-
-    # Parse additional CORS origins from environment (optional)
-    additional_origins = os.getenv('CORS_ORIGINS', '').strip()
-    if additional_origins:
-        # Split by comma and clean up whitespace
-        extra_origins = [origin.strip() for origin in additional_origins.split(',') if origin.strip()]
-        cors_origins.extend(extra_origins)
-        print(f"📡 Additional CORS origins: {extra_origins}")
-
-    # Remove duplicates while preserving order
-    seen = set()
-    unique_origins = []
-    for origin in cors_origins:
-        if origin not in seen:
-            seen.add(origin)
-            unique_origins.append(origin)
-
-    return unique_origins
-
-ALLOWED_ORIGINS = parse_cors_origins()
+# CORS Configuration Removed - Telegram cryptographic validation provides security
 
 # Telegram API Base URL
 TELEGRAM_API_BASE = f"https://api.telegram.org/bot{BOT_TOKEN}"
@@ -123,6 +83,4 @@ print(f"   Volume: {REDIS_VOLUME_NAME}")
 print(f"   Frontend URL: {FRONT_URL}")
 print(f"   Backend URL: {BACKEND_URL}")
 print(f"   Webhook URL: {WEBHOOK_URL}")
-print(f"📡 CORS allowed origins ({len(ALLOWED_ORIGINS)}):")
-for i, origin in enumerate(ALLOWED_ORIGINS, 1):
-    print(f"   {i}. {origin}")
+print("🔓 CORS disabled - All origins allowed (Telegram validation provides security)")

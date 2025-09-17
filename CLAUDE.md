@@ -114,8 +114,7 @@ Copy `back/.env.example` to `back/.env` and configure **6 REQUIRED VALUES**:
 5. `FRONTEND_URL` - Your frontend deployment URL
 6. `BACKEND_URL` - Your backend domain
 
-**Optional CORS Configuration:**
-7. `CORS_ORIGINS` - Additional allowed origins (comma-separated)
+**Note**: CORS is disabled - all origins are allowed since Telegram cryptographic validation provides security.
 
 **Auto-Generated from PROJECT_NAME:**
 - Container names: `${PROJECT_NAME}-flask`, `${PROJECT_NAME}-redis`
@@ -132,7 +131,6 @@ SECRET_KEY=abc123...
 BOT_TOKEN=123456:ABC...
 FRONTEND_URL=https://user.github.io/telegram-shop
 BACKEND_URL=https://api.telegram-shop.com
-CORS_ORIGINS=https://telegram-shop.com,https://staging.telegram-shop.com
 ```
 
 **Results in:**
@@ -278,7 +276,7 @@ Set webhook URL in your `.env` file and use Telegram Bot API directly or BotFath
 ## Important Notes
 
 - **Bot Token Required**: Set `BOT_TOKEN` environment variable for authentication
-- **CORS Configuration**: Set `FRONTEND_URL` to your frontend domain
+- **No CORS Restrictions**: All origins are allowed (Telegram validation provides security)
 - **API URLs**: Update frontend JavaScript files with your backend URL
 - **Redis Persistence**: Data stored in `./redis_data/` bind mount for maximum safety
 - **User Data**: Stored as JSON in Redis with `user_data` field for application-specific data
@@ -300,50 +298,19 @@ Set webhook URL in your `.env` file and use Telegram Bot API directly or BotFath
 **Solution**: Fixed in template - handles both `{user: {...}}` and direct user data formats
 **Code Pattern**: `this.currentUser = result.user || result;`
 
-#### 3. **CORS (Cross-Origin) Errors**
+#### 3. **Network Connectivity Errors**
 **Symptoms**:
-- Backend logs show successful requests (200/201)
 - Frontend shows "Load failed" or "Network Error"
+- No requests appearing in backend logs
 - Authentication fails despite valid data
 
-**Easy CORS Configuration** (No more 30-minute debugging sessions! 🎉):
-
-**Method 1: Environment Variable (Recommended)**
-```bash
-# In your .env file
-FRONTEND_URL=https://yourusername.github.io/your-repo
-CORS_ORIGINS=https://mydomain.com,https://staging.mydomain.com,https://dev.mydomain.com
-```
-
-**Method 2: Multiple Domains Example**
-```bash
-# For development + staging + production
-CORS_ORIGINS=http://localhost:3000,https://preview.netlify.app,https://staging.mydomain.com
-```
-
-**Auto-Generated CORS List**:
-The backend automatically includes:
-- Your `FRONTEND_URL` (with and without trailing slash)
-- Common development ports: `localhost:3000`, `localhost:8080`, `localhost:5173`
-- Any domains in `CORS_ORIGINS`
-
-**Debug CORS Issues**:
-When you start the backend, it shows all allowed origins:
-```
-📡 CORS allowed origins (8):
-   1. https://yourusername.github.io/your-repo
-   2. https://yourusername.github.io/your-repo
-   3. http://localhost:8080
-   4. http://localhost:3000
-   5. https://mydomain.com
-   6. https://staging.mydomain.com
-```
-
 **Solutions**:
-1. **Add Your Domain**: Add missing domains to `CORS_ORIGINS` in `.env`
+1. **Verify Backend URL**: Ensure backend URL includes `/api` path
 2. **HTTPS Required**: Use HTTPS for production (not HTTP)
-3. **Correct API Path**: Backend URL must include `/api` path
-4. **Check Logs**: Backend startup shows all allowed CORS origins
+3. **Check Backend Health**: Test `https://your-backend.com/health` endpoint
+4. **Network Issues**: Verify backend is accessible from frontend domain
+
+**Note**: CORS is disabled in this template - all origins are allowed since Telegram cryptographic validation provides security.
 
 #### 4. **Backend URL Configuration**
 **Problem**: Missing HTTPS protocol or `/api` path
@@ -414,9 +381,7 @@ docker ps
 **Environment Setup**:
 - [ ] All 6 required `.env` variables set (no CHANGE-ME values)
 - [ ] Backend URL includes HTTPS and `/api` path
-- [ ] Frontend URL matches backend CORS configuration
-- [ ] Additional domains added to `CORS_ORIGINS` if needed
-- [ ] Backend startup logs show your domain in CORS list
+- [ ] Backend accessible via health endpoint test
 
 **Authentication Issues**:
 - [ ] App opened in Telegram (not browser)
