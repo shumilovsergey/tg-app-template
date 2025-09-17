@@ -18,7 +18,9 @@ A comprehensive template for building Telegram Web Apps with Flask backend, Redi
    git clone <this-repo>
    cd tg-app-template
    cp back/.env.example back/.env
-   # Edit back/.env and add your BOT_TOKEN and FRONTEND_URL
+   # ⚠️ IMPORTANT: Edit back/.env and set these 6 required values:
+   # PROJECT_NAME, FLASK_PORT, SECRET_KEY, BOT_TOKEN, FRONTEND_URL, BACKEND_URL
+   # Everything else is auto-generated!
    ```
 
 2. **Start backend development**:
@@ -27,12 +29,18 @@ A comprehensive template for building Telegram Web Apps with Flask backend, Redi
    docker-compose -f docker-compose.yml -f docker-compose.dev.yml up --build
    ```
 
-3. **Serve frontend**:
+3. **Configure frontend API URL**:
+   Update backend URL in one place only:
+   - `front/config.js` (line 11)
+
+   Replace `https://your-backend-domain.com/api` with your actual backend URL.
+
+4. **Serve frontend**:
    - Serve `front/` folder with any static server
    - Deploy to any hosting platform (GitHub Pages, Netlify, Vercel, etc.) for production
 
-4. **Access your app**:
-   - Backend API: http://localhost:5000
+5. **Access your app**:
+   - Backend API: http://localhost:YOUR-CONFIGURED-PORT
    - Frontend: Wherever you serve the `front/` folder
 
 ## Structure

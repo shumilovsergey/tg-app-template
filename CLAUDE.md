@@ -9,14 +9,21 @@ This is `tg-app-template`, a comprehensive Telegram Web App template with Flask 
 ## Quick Start Commands
 
 ```bash
-# Production backend deployment
-cd back
-docker-compose up -d --build
+# Setup environment (REQUIRED)
+cp back/.env.example back/.env
+# ⚠️ CRITICAL: Edit back/.env and set 6 required values
+# APPLICATION WILL NOT START WITH PLACEHOLDER VALUES
 
-# Backend only (for API development without Docker)
+# Production backend deployment
+cd back && docker-compose up -d --build
+
+# Development with live reload (if docker-compose.dev.yml exists)
+cd back && docker-compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+
+# Backend only (without Docker)
 cd back && python -m venv venv && source venv/bin/activate && pip install -r requirements.txt && python run.py
 
-# View logs
+# View logs (replace with your container names)
 cd back && docker-compose logs -f backend
 cd back && docker-compose logs -f redis
 
@@ -25,6 +32,10 @@ cd back && docker-compose down
 
 # Clean everything (including volumes)
 cd back && docker-compose down -v --remove-orphans
+
+# Health checks (replace PORT with your configured FLASK_PORT)
+curl http://localhost:PORT/health  # Backend health check
+curl http://localhost:PORT/api/health  # API health check
 ```
 
 ## Project Structure
@@ -33,7 +44,8 @@ cd back && docker-compose down -v --remove-orphans
 ├── front/                  # Frontend application
 │   ├── index.html         # Main entry point with device detection
 │   ├── style.css          # Responsive styles with Telegram theme support
-│   ├── app.js             # Main application logic
+│   ├── config.js          # Centralized configuration (API URLs, settings)
+│   ├── app.js             # Main application logic with page loading system
 │   ├── telegram.js        # Telegram WebApp initialization and utilities
 │   ├── assets/            # Welcome page assets (logo, icons)
 │   └── pages/             # Page templates
@@ -53,7 +65,8 @@ cd back && docker-compose down -v --remove-orphans
 │       ├── routes.py      # API endpoints (WebApp + Bot webhook)
 │       ├── database.py    # Redis connection and user management
 │       ├── telegram_utils.py # Telegram auth, validation, and message parsing
-│       └── bot_logic.py   # Telegram bot commands and message handling
+│       ├── bot_logic.py   # Telegram bot commands and message handling
+│       └── constants.py   # Application constants and configuration
 ```
 
 ## Architecture
@@ -63,7 +76,9 @@ cd back && docker-compose down -v --remove-orphans
 - **Platform Support**: iOS, Android, macOS, Windows, Linux with platform-specific adjustments
 - **Telegram Integration**: Complete WebApp API integration with theme support, haptic feedback, and navigation
 - **Responsive Design**: Fullscreen on mobile, windowed on desktop with Telegram theme colors
-- **Page System**: Modular page structure in `front/pages/` with template for easy expansion
+- **Centralized Configuration**: Single `config.js` file for all settings, API URLs, and app configuration
+- **Dynamic Page System**: Modular page loading with automatic HTML/CSS/JS injection
+- **Page Management**: Easy navigation between pages with centralized state management
 
 ### Backend Features
 - **Flask API**: RESTful endpoints for user management and bot webhooks
@@ -83,22 +98,42 @@ cd back && docker-compose down -v --remove-orphans
 
 ## Environment Configuration
 
-Copy `back/.env.example` to `back/.env` and configure:
+Copy `back/.env.example` to `back/.env` and configure **6 REQUIRED VALUES**:
 
+⚠️ **CRITICAL: No Default Values** - The application will NOT start until you replace all `CHANGE-ME` values in `.env`
+
+**Required Configuration (Only 6 values to set!):**
+1. `PROJECT_NAME` - Your project identifier (e.g., myapp, telegram-shop)
+2. `FLASK_PORT` - Unique port (e.g., 5001, 5002, 8080)
+3. `SECRET_KEY` - Generate secure secret key
+4. `BOT_TOKEN` - Get from @BotFather
+5. `FRONTEND_URL` - Your frontend deployment URL
+6. `BACKEND_URL` - Your backend domain
+
+**Auto-Generated from PROJECT_NAME:**
+- Container names: `${PROJECT_NAME}-flask`, `${PROJECT_NAME}-redis`
+- Networks: `${PROJECT_NAME}-private-network`, `${PROJECT_NAME}-public-network`
+- Volume name: `${PROJECT_NAME}-redis-data`
+- Webhook URL: `${BACKEND_URL}/api/webhook`
+- Redis port: 6379 (hardcoded, isolated in container)
+
+**Example Configuration:**
 ```bash
-# Required for production
-BOT_TOKEN=your-telegram-bot-token-here
-SECRET_KEY=your-secure-secret-key
-
-# Frontend URL Configuration
-FRONTEND_URL=https://yourusername.github.io
-
-# Optional (has defaults)
-FLASK_HOST=0.0.0.0
-FLASK_PORT=5000
-FLASK_DEBUG=false
-REDIS_URL=redis://redis:6379/0
+PROJECT_NAME=telegram-shop
+FLASK_PORT=5001
+SECRET_KEY=abc123...
+BOT_TOKEN=123456:ABC...
+FRONTEND_URL=https://user.github.io/telegram-shop
+BACKEND_URL=https://api.telegram-shop.com
 ```
+
+**Results in:**
+- Containers: `telegram-shop-flask`, `telegram-shop-redis`
+- Private network: `telegram-shop-private-network` (Flask↔Redis only)
+- Public network: `telegram-shop-public-network` (Flask port exposure)
+- Volume: `telegram-shop-redis-data`
+- Webhook: `https://api.telegram-shop.com/api/webhook`
+- Redis: Internal port 6379 (no external conflicts possible)
 
 ## API Endpoints
 
@@ -110,25 +145,62 @@ REDIS_URL=redis://redis:6379/0
 ### Bot Webhook API
 - `POST /api/webhook` - Telegram bot webhook endpoint
 
+### General Endpoints
+- `GET /health` - Basic health check (no auth required)
+
 WebApp endpoints require Telegram WebApp authentication via `X-Telegram-Init-Data` header.
 Bot webhook endpoints are called directly by Telegram servers.
 
 ## Development Workflow
 
+### Initial Setup
+1. **Environment**: Copy `back/.env.example` to `back/.env` and configure 6 required values
+2. **Validation**: Application validates all required variables and auto-generates the rest
+3. **Verify Setup**: Run `curl http://localhost:YOUR-PORT/health` after starting backend
+
 ### Backend Development
-1. **Setup**: Copy `back/.env.example` to `back/.env` and configure bot token
-2. **Start Backend**: `cd back && docker-compose up --build`
-3. **Backend Access**: Backend API: http://localhost:5000
+1. **Start Backend**: `cd back && docker-compose up --build`
+2. **Development Mode**: Use `docker-compose -f docker-compose.yml -f docker-compose.dev.yml up --build` if dev compose exists
+3. **Backend Access**: Backend API: http://localhost:YOUR-CONFIGURED-PORT
+4. **Logs**: `cd back && docker-compose logs -f YOUR-CONTAINER-NAME`
+
+### Configuration Validation
+If you see errors like:
+```
+❌ ERROR: Required environment variable 'PROJECT_NAME' is not set or has placeholder value!
+```
+This means you need to update that value in your `.env` file.
+
+**Success looks like:**
+```
+✅ All environment variables validated successfully!
+   Project: telegram-shop
+   Flask container: telegram-shop-flask (exposed port: 5001)
+   Redis container: telegram-shop-redis (internal port: 6379)
+   Private network: telegram-shop-private-network
+   Public network: telegram-shop-public-network
+   Volume: telegram-shop-redis-data
+   Frontend URL: https://user.github.io/telegram-shop
+   Backend URL: https://api.telegram-shop.com
+   Webhook URL: https://api.telegram-shop.com/api/webhook
+```
 
 ### Frontend Development
-1. **Serve Locally**: Use any static server (Live Server, Python SimpleHTTPServer, etc.)
-2. **Deploy Frontend**: Push `front/` folder contents to your hosting platform (GitHub Pages, Netlify, Vercel, etc.)
-3. **Update API URLs**: Set backend URL in `front/app.js` and `front/pages/*/app.js`
+1. **Configure API URL**: Update backend URL in `front/config.js` (one file only)
+2. **Serve Locally**: Use any static server (Live Server, Python SimpleHTTPServer, etc.)
+3. **Deploy Frontend**: Push `front/` folder contents to your hosting platform
 4. **Add Pages**: Create new page folders in `front/pages/` using the `main` page as template
+5. **Page Navigation**: Use `window.app.navigateToPage('pagename')` to switch between pages
+
+### Testing
+1. **Health Checks**: `curl http://localhost:YOUR-PORT/health` and `curl http://localhost:YOUR-PORT/api/health`
+2. **API Testing**: Use Postman/curl with proper Telegram WebApp headers
+3. **Container Status**: `docker ps` to verify your named containers are running
 
 ### Integration Testing
-1. **Test Locally**: Frontend on localhost + Backend on localhost:5000
+1. **Test Locally**: Frontend on localhost + Backend on localhost:YOUR-PORT
 2. **Test Production**: Deployed frontend + Deployed backend
+3. **Docker Cleanup**: Use your custom volume/network names for cleanup commands
 3. **Telegram Testing**: Use Telegram WebApp test environment
 
 ## Security Features
@@ -141,11 +213,15 @@ Bot webhook endpoints are called directly by Telegram servers.
 
 ## Adding New Features
 
-1. **New Frontend Page**: Copy `front/pages/main/` folder, modify content
+1. **New Frontend Page**:
+   - Copy `front/pages/main/` folder to `front/pages/yourpage/`
+   - Add page path to `front/config.js` in `pages.paths` object
+   - Navigate with `window.app.navigateToPage('yourpage')`
 2. **New WebApp API Endpoint**: Add route in `back/app/routes.py` with authentication
 3. **New Bot Command**: Add handler in `back/app/bot_logic.py` `BotMessageHandler` class
 4. **Database Changes**: Extend `UserManager` class in `back/app/database.py`
 5. **Telegram Features**: Use utilities in `front/telegram.js` and `back/app/telegram_utils.py`
+6. **Configuration Changes**: Update `front/config.js` for app-wide settings
 
 ## Bot Setup
 
