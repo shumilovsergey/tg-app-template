@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is `tg-app-template`, a comprehensive Telegram Web App template with Flask backend, Redis storage, and device-adaptive frontend. The template provides secure user authentication, data management, and Docker deployment.
+This is `tg-app-template`, a comprehensive Telegram Web App template with Flask backend, Redis storage, and device-adaptive frontend. The template provides secure user authentication, data management, and Docker deployment with **zero-configuration auto-generation** from a single PROJECT_NAME.
 
 ## Quick Start Commands
 
@@ -82,19 +82,23 @@ curl http://localhost:PORT/api/health  # API health check
 
 ### Backend Features
 - **Flask API**: RESTful endpoints for user management and bot webhooks
-- **Redis Storage**: Persistent user data with isolated network access
-- **Telegram Auth**: Secure validation of Telegram WebApp init data
+- **Redis Storage**: Persistent user data with bind-mounted storage outside container
+- **Telegram Auth**: Secure validation of Telegram WebApp init data with comprehensive debug logging
 - **Bot Logic**: Complete Telegram bot with commands, callbacks, and media handling
 - **Message Parsing**: User-friendly message structure from Telegram updates
 - **User Management**: Create, read, update, delete operations with data isolation
 - **Security**: Each user can only access their own data, input validation, sanitization
+- **Auto-Generation**: All Docker names, networks, and URLs auto-generated from PROJECT_NAME
+- **Strict Validation**: Zero defaults - application won't start without proper configuration
 
 ### Infrastructure
-- **Docker Compose**: Backend-only multi-container setup with health checks
-- **Redis Isolation**: Redis runs in isolated network, only backend can access
-- **Persistent Storage**: Redis data persisted to Docker volume
+- **Docker Compose**: Multi-container setup with health checks and proper networking
+- **Dual Network Architecture**: Public network for Flask port exposure, private network for Flask-Redis communication
+- **Redis Isolation**: Redis accessible only via private network with `expose` instead of `ports`
+- **Bind Mount Storage**: Redis data stored in `./redis_data/` for safety (excluded from git)
+- **Zero Configuration**: All container names, networks, volumes auto-generated from PROJECT_NAME
 - **Frontend Ready**: Frontend configured for any hosting platform (GitHub Pages, Netlify, Vercel, etc.)
-- **CORS Configuration**: Supports frontend origins and development
+- **CORS Configuration**: Enhanced CORS with explicit headers and preflight support
 
 ## Environment Configuration
 
@@ -113,9 +117,9 @@ Copy `back/.env.example` to `back/.env` and configure **6 REQUIRED VALUES**:
 **Auto-Generated from PROJECT_NAME:**
 - Container names: `${PROJECT_NAME}-flask`, `${PROJECT_NAME}-redis`
 - Networks: `${PROJECT_NAME}-private-network`, `${PROJECT_NAME}-public-network`
-- Volume name: `${PROJECT_NAME}-redis-data`
-- Webhook URL: `${BACKEND_URL}/api/webhook`
-- Redis port: 6379 (hardcoded, isolated in container)
+- Redis data folder: `./redis_data/` (bind mount, excluded from git)
+- Webhook URL: `${BACKEND_URL}/api/webhook` (automatic /api/webhook endpoint)
+- Redis port: 6379 (hardcoded, exposed only internally via `expose`)
 
 **Example Configuration:**
 ```bash
@@ -129,11 +133,11 @@ BACKEND_URL=https://api.telegram-shop.com
 
 **Results in:**
 - Containers: `telegram-shop-flask`, `telegram-shop-redis`
-- Private network: `telegram-shop-private-network` (Flask↔Redis only)
+- Private network: `telegram-shop-private-network` (Flask↔Redis only, internal: true)
 - Public network: `telegram-shop-public-network` (Flask port exposure)
-- Volume: `telegram-shop-redis-data`
-- Webhook: `https://api.telegram-shop.com/api/webhook`
-- Redis: Internal port 6379 (no external conflicts possible)
+- Redis data: `./redis_data/` directory (bind mount, safe from volume loss)
+- Webhook: `https://api.telegram-shop.com/api/webhook` (auto-generated)
+- Redis: Port 6379 exposed only internally (no external access possible)
 
 ## API Endpoints
 
@@ -179,7 +183,7 @@ This means you need to update that value in your `.env` file.
    Redis container: telegram-shop-redis (internal port: 6379)
    Private network: telegram-shop-private-network
    Public network: telegram-shop-public-network
-   Volume: telegram-shop-redis-data
+   Redis data folder: ./redis_data/
    Frontend URL: https://user.github.io/telegram-shop
    Backend URL: https://api.telegram-shop.com
    Webhook URL: https://api.telegram-shop.com/api/webhook
@@ -223,6 +227,20 @@ This means you need to update that value in your `.env` file.
 5. **Telegram Features**: Use utilities in `front/telegram.js` and `back/app/telegram_utils.py`
 6. **Configuration Changes**: Update `front/config.js` for app-wide settings
 
+## Data Management
+
+### Redis Data Location
+- **Development**: `./redis_data/` directory in project root
+- **Excluded from Git**: Added to `.gitignore` for safety
+- **Bind Mount**: Direct folder mapping, survives container recreation
+- **Backup**: Simply copy `./redis_data/` folder
+
+### Authentication Fixes Applied
+- **Telegram WebApp Auth**: Fixed HMAC validation algorithm
+- **CORS Enhancement**: Explicit headers, preflight support
+- **Debug Logging**: Comprehensive authentication debugging
+- **Error Handling**: Clear error messages for troubleshooting
+
 ## Bot Setup
 
 ### Setting Up Webhook
@@ -257,6 +275,8 @@ Set webhook URL in your `.env` file and use Telegram Bot API directly or BotFath
 - **Bot Token Required**: Set `BOT_TOKEN` environment variable for authentication
 - **CORS Configuration**: Set `FRONTEND_URL` to your frontend domain
 - **API URLs**: Update frontend JavaScript files with your backend URL
-- **Redis Persistence**: Data stored in Docker volume `tg-app-redis-data`
+- **Redis Persistence**: Data stored in `./redis_data/` bind mount for maximum safety
 - **User Data**: Stored as JSON in Redis with `user_data` field for application-specific data
 - **Docker Location**: All Docker files are in `back/` folder
+- **Auto-Generation**: All infrastructure auto-generated from PROJECT_NAME
+- **Zero Conflicts**: Each project gets unique namespaced resources

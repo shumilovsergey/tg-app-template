@@ -1,64 +1,70 @@
 # Telegram App Template
 
-A comprehensive template for building Telegram Web Apps with Flask backend, Redis storage, and device-adaptive frontend.
+Production-ready template for Telegram Web Apps with Flask backend, Redis storage, and auto-generated infrastructure.
 
-## Features
+## 🚀 Quick Start
 
-✅ **Device Detection** - Mobile/tablet/desktop with platform-specific styles
-✅ **Telegram Integration** - Complete WebApp API with theme support and haptic feedback
-✅ **Secure Authentication** - Telegram user validation with data isolation
-✅ **Redis Storage** - Persistent user data in isolated network
-✅ **Docker Deployment** - Production-ready multi-container setup
-✅ **Development Mode** - Live reload and debugging support
-
-## Quick Start
-
-1. **Clone and configure**:
+1. **Setup Backend**:
    ```bash
-   git clone <this-repo>
-   cd tg-app-template
    cp back/.env.example back/.env
-   # ⚠️ IMPORTANT: Edit back/.env and set these 6 required values:
+   # Edit back/.env - set 6 required values:
    # PROJECT_NAME, FLASK_PORT, SECRET_KEY, BOT_TOKEN, FRONTEND_URL, BACKEND_URL
-   # Everything else is auto-generated!
+   cd back && docker-compose up -d --build
    ```
 
-2. **Start backend development**:
+2. **Setup Frontend**:
    ```bash
-   cd back
-   docker-compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+   # Edit front/config.js line 11:
+   # Replace 'https://your-backend-domain.com/api' with your backend URL
+   # Serve front/ folder with any static server or deploy to hosting
    ```
 
-3. **Configure frontend API URL**:
-   Update backend URL in one place only:
-   - `front/config.js` (line 11)
+## 📝 Environment Configuration
 
-   Replace `https://your-backend-domain.com/api` with your actual backend URL.
+### Backend (`back/.env`)
+```bash
+PROJECT_NAME=myapp              # Your project name
+FLASK_PORT=5001                 # Unique port
+SECRET_KEY=your-secret-key      # Generate with: python -c "import secrets; print(secrets.token_hex(32))"
+BOT_TOKEN=123456:ABC...         # From @BotFather
+FRONTEND_URL=https://...        # Your frontend URL
+BACKEND_URL=https://...         # Your backend domain
+```
 
-4. **Serve frontend**:
-   - Serve `front/` folder with any static server
-   - Deploy to any hosting platform (GitHub Pages, Netlify, Vercel, etc.) for production
+### Frontend (`front/config.js`)
+```javascript
+// Line 11 - Update with your backend URL:
+: 'https://your-backend-domain.com/api'
+```
 
-5. **Access your app**:
-   - Backend API: http://localhost:YOUR-CONFIGURED-PORT
-   - Frontend: Wherever you serve the `front/` folder
+## 📡 API Endpoints
 
-## Structure
+### WebApp API (requires Telegram auth)
+- `GET /api/user` - Get or create user data
+- `POST /api/user` - Update user data
+- `GET /api/health` - API health check
 
-- `front/` - Frontend ready for any hosting platform deployment
-- `back/` - Backend Flask API with Docker setup and Redis storage
-- `back/docker-compose.yml` - Backend production deployment
-- `back/docker-compose.dev.yml` - Development overrides
+### Bot API
+- `POST /api/webhook` - Telegram bot webhook (auto-configured)
 
-## Documentation
+### General
+- `GET /health` - Basic health check
 
-See [CLAUDE.md](CLAUDE.md) for complete development guide, API documentation, and architecture details.
+**Authentication**: WebApp endpoints require `X-Telegram-Init-Data` header
 
-## Requirements
+## 🏗️ Auto-Generated Infrastructure
 
-- Docker and Docker Compose
-- Telegram Bot Token (from @BotFather)
+From `PROJECT_NAME=myapp`:
+- Containers: `myapp-flask`, `myapp-redis`
+- Networks: `myapp-private-network`, `myapp-public-network`
+- Data: `./redis_data/` folder
+- Webhook: `${BACKEND_URL}/api/webhook`
 
-## License
+## 📚 Documentation
 
-MIT
+See [CLAUDE.md](CLAUDE.md) for complete development guide and architecture details.
+
+## 📋 Requirements
+
+- Docker & Docker Compose
+- Telegram Bot Token ([@BotFather](https://t.me/BotFather))
