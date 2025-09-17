@@ -50,12 +50,13 @@ class MainPage {
                 headers
             });
 
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
+            if (!response.ok && response.status !== 201) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
 
             const result = await response.json();
-            this.user = result.user;
+            // Handle both response formats: {user: {...}} or direct user data
+            this.user = result.user || result;
             this.displayUserInfo();
 
         } catch (error) {
@@ -114,12 +115,13 @@ ${JSON.stringify(this.user.user_data, null, 2)}
                 body: JSON.stringify(updateData)
             });
 
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
+            if (!response.ok && response.status !== 201) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
 
             const result = await response.json();
-            this.user = result.user;
+            // Handle both response formats: {user: {...}} or direct user data
+            this.user = result.user || result;
             this.displayUserInfo();
 
             if (window.tgApp?.isInTelegram) {

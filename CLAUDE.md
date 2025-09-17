@@ -17,15 +17,15 @@ cp back/.env.example back/.env
 # Production backend deployment
 cd back && docker-compose up -d --build
 
-# Development with live reload (if docker-compose.dev.yml exists)
-cd back && docker-compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+# Development with live reload (not currently configured)
+cd back && docker-compose up --build
 
 # Backend only (without Docker)
 cd back && python -m venv venv && source venv/bin/activate && pip install -r requirements.txt && python run.py
 
-# View logs (replace with your container names)
-cd back && docker-compose logs -f backend
-cd back && docker-compose logs -f redis
+# View logs (using auto-generated container names)
+cd back && docker-compose logs -f backend  # Flask app logs
+cd back && docker-compose logs -f redis    # Redis logs
 
 # Stop all services
 cd back && docker-compose down
@@ -114,6 +114,9 @@ Copy `back/.env.example` to `back/.env` and configure **6 REQUIRED VALUES**:
 5. `FRONTEND_URL` - Your frontend deployment URL
 6. `BACKEND_URL` - Your backend domain
 
+**Optional CORS Configuration:**
+7. `CORS_ORIGINS` - Additional allowed origins (comma-separated)
+
 **Auto-Generated from PROJECT_NAME:**
 - Container names: `${PROJECT_NAME}-flask`, `${PROJECT_NAME}-redis`
 - Networks: `${PROJECT_NAME}-private-network`, `${PROJECT_NAME}-public-network`
@@ -129,6 +132,7 @@ SECRET_KEY=abc123...
 BOT_TOKEN=123456:ABC...
 FRONTEND_URL=https://user.github.io/telegram-shop
 BACKEND_URL=https://api.telegram-shop.com
+CORS_ORIGINS=https://telegram-shop.com,https://staging.telegram-shop.com
 ```
 
 **Results in:**
@@ -164,7 +168,7 @@ Bot webhook endpoints are called directly by Telegram servers.
 
 ### Backend Development
 1. **Start Backend**: `cd back && docker-compose up --build`
-2. **Development Mode**: Use `docker-compose -f docker-compose.yml -f docker-compose.dev.yml up --build` if dev compose exists
+2. **Development Mode**: Use `docker-compose up --build` (development-specific compose not currently configured)
 3. **Backend Access**: Backend API: http://localhost:YOUR-CONFIGURED-PORT
 4. **Logs**: `cd back && docker-compose logs -f YOUR-CONTAINER-NAME`
 
@@ -200,6 +204,7 @@ This means you need to update that value in your `.env` file.
 1. **Health Checks**: `curl http://localhost:YOUR-PORT/health` and `curl http://localhost:YOUR-PORT/api/health`
 2. **API Testing**: Use Postman/curl with proper Telegram WebApp headers
 3. **Container Status**: `docker ps` to verify your named containers are running
+4. **Debug Console**: Enable `debugConsole: true` in `front/config.js` for visual debugging in Telegram WebApp
 
 ### Integration Testing
 1. **Test Locally**: Frontend on localhost + Backend on localhost:YOUR-PORT
@@ -268,7 +273,7 @@ Set webhook URL in your `.env` file and use Telegram Bot API directly or BotFath
 1. Deploy `back/` folder to your server
 2. Set environment variables (especially `BOT_TOKEN` and `FRONTEND_URL`)
 3. Run `docker-compose up -d --build`
-4. Ensure port 5000 is accessible from frontend origin
+4. Ensure your configured FLASK_PORT is accessible from frontend origin
 
 ## Important Notes
 
@@ -280,3 +285,161 @@ Set webhook URL in your `.env` file and use Telegram Bot API directly or BotFath
 - **Docker Location**: All Docker files are in `back/` folder
 - **Auto-Generation**: All infrastructure auto-generated from PROJECT_NAME
 - **Zero Conflicts**: Each project gets unique namespaced resources
+
+## 🐛 Troubleshooting & Debugging
+
+### Common Issues and Fixes
+
+#### 1. **HTTP Status Code Errors**
+**Problem**: Frontend shows "Load failed" with 201 status codes
+**Solution**: Fixed in template - frontend now accepts both 200 and 201 responses
+**Files**: `front/app.js`, `front/pages/main/app.js`
+
+#### 2. **API Response Structure Issues**
+**Problem**: Frontend expects `result.user` but backend returns user data directly
+**Solution**: Fixed in template - handles both `{user: {...}}` and direct user data formats
+**Code Pattern**: `this.currentUser = result.user || result;`
+
+#### 3. **CORS (Cross-Origin) Errors**
+**Symptoms**:
+- Backend logs show successful requests (200/201)
+- Frontend shows "Load failed" or "Network Error"
+- Authentication fails despite valid data
+
+**Easy CORS Configuration** (No more 30-minute debugging sessions! 🎉):
+
+**Method 1: Environment Variable (Recommended)**
+```bash
+# In your .env file
+FRONTEND_URL=https://yourusername.github.io/your-repo
+CORS_ORIGINS=https://mydomain.com,https://staging.mydomain.com,https://dev.mydomain.com
+```
+
+**Method 2: Multiple Domains Example**
+```bash
+# For development + staging + production
+CORS_ORIGINS=http://localhost:3000,https://preview.netlify.app,https://staging.mydomain.com
+```
+
+**Auto-Generated CORS List**:
+The backend automatically includes:
+- Your `FRONTEND_URL` (with and without trailing slash)
+- Common development ports: `localhost:3000`, `localhost:8080`, `localhost:5173`
+- Any domains in `CORS_ORIGINS`
+
+**Debug CORS Issues**:
+When you start the backend, it shows all allowed origins:
+```
+📡 CORS allowed origins (8):
+   1. https://yourusername.github.io/your-repo
+   2. https://yourusername.github.io/your-repo
+   3. http://localhost:8080
+   4. http://localhost:3000
+   5. https://mydomain.com
+   6. https://staging.mydomain.com
+```
+
+**Solutions**:
+1. **Add Your Domain**: Add missing domains to `CORS_ORIGINS` in `.env`
+2. **HTTPS Required**: Use HTTPS for production (not HTTP)
+3. **Correct API Path**: Backend URL must include `/api` path
+4. **Check Logs**: Backend startup shows all allowed CORS origins
+
+#### 4. **Backend URL Configuration**
+**Problem**: Missing HTTPS protocol or `/api` path
+**Fix**: Update `front/config.js` line 11:
+```javascript
+: 'https://your-backend-domain.com/api'  // HTTPS + /api path
+```
+
+### 🐛 Debug Console
+
+The template includes a visual debug console for Telegram WebApp development:
+
+**Enable Debug Console**:
+```javascript
+// In front/config.js
+app: {
+    debugConsole: true,  // Enable for development
+}
+```
+
+**Debug Features**:
+- 🚀 Real-time logging with timestamps and emojis
+- 📱 Device and platform detection logs
+- 🔐 Complete authentication flow tracing
+- 👤 User data inspection
+- 📤 Request headers and URLs
+- 📥 Response status and data
+- ❌ Detailed error messages with stack traces
+- Toggle minimize/expand functionality
+- Clear logs functionality
+
+**Debug Console Controls**:
+- **Toggle**: Minimize/expand console
+- **Clear**: Clear all debug logs
+- **Auto-scroll**: Automatically scrolls to latest logs
+
+**For Production**: Set `debugConsole: false` to disable
+
+### 🔧 Manual Debugging
+
+#### Check Authentication Flow:
+1. **Telegram WebApp**: Verify `window.tgApp.isInTelegram`
+2. **User Data**: Check `window.tgApp.getUserData()`
+3. **Init Data**: Verify `window.tgApp.validateInitData()` returns data
+4. **Headers**: Inspect request headers in Network tab
+5. **Backend Logs**: Check Docker logs for server errors
+
+#### Backend Debugging:
+```bash
+# View backend logs
+cd back && docker-compose logs -f backend
+
+# View Redis logs
+cd back && docker-compose logs -f redis
+
+# Check container status
+docker ps
+```
+
+#### Frontend Debugging:
+1. **Enable Debug Mode**: Set `debug: true` in `front/config.js`
+2. **Browser Console**: Check for JavaScript errors
+3. **Network Tab**: Inspect API requests and responses
+4. **Debug Console**: Use built-in visual debug console
+
+### 📋 Quick Troubleshooting Checklist
+
+**Environment Setup**:
+- [ ] All 6 required `.env` variables set (no CHANGE-ME values)
+- [ ] Backend URL includes HTTPS and `/api` path
+- [ ] Frontend URL matches backend CORS configuration
+- [ ] Additional domains added to `CORS_ORIGINS` if needed
+- [ ] Backend startup logs show your domain in CORS list
+
+**Authentication Issues**:
+- [ ] App opened in Telegram (not browser)
+- [ ] Bot token valid and active
+- [ ] Init data validation working
+- [ ] No CORS errors in browser console
+
+**Network Issues**:
+- [ ] Backend health endpoint responding: `curl http://localhost:PORT/health`
+- [ ] API health endpoint responding: `curl http://localhost:PORT/api/health`
+- [ ] No network errors in browser console
+- [ ] Correct request headers sent
+
+**Development Setup**:
+- [ ] Docker containers running: `docker ps`
+- [ ] Debug console enabled for troubleshooting
+- [ ] Backend logs show request processing
+- [ ] Frontend shows debug information
+
+### 🚀 Best Practices
+
+1. **Always Use Debug Console** during development
+2. **Check Backend Logs** alongside frontend debugging
+3. **Test Both Local and Production** environments
+4. **Verify CORS Configuration** before deployment
+5. **Disable Debug Features** for production builds
