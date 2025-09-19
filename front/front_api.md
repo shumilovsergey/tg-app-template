@@ -7,17 +7,17 @@ Complete guide for setting up the frontend of your Telegram Web App with the bac
 ### 1. Environment Setup
 
 1. **Copy the template frontend folder** to your project
-2. **Configure the API URL** by editing `front/config.js`:
+2. **Configure your environment** by editing `front/config.js`:
 
 ```javascript
-// Update this line with your backend URL
-baseUrl: 'https://your-backend-domain.com/api'
-```
+// Choose your configuration by uncommenting one line:
+window.AppConfig = LOCAL_DEV;     // ← For local development
+// window.AppConfig = PRODUCTION; // ← For production deployment
 
-3. **Use the environment helper** - check `front/env.js` for ready-to-use configurations:
-   - Development (localhost backend)
-   - Production (deployed backend)
-   - Staging (testing backend)
+// Update the URLs in LOCAL_DEV and PRODUCTION sections:
+// - Replace YOUR_FLASK_PORT with your backend port (e.g., 5001, 8080, 9002)
+// - Replace your-backend-domain.com with your actual backend URL
+```
 
 ### 2. Deploy Frontend
 
@@ -107,53 +107,31 @@ const updatedUser = result.user;
 
 ## Configuration Examples
 
-### Development Configuration
+### Simple Configuration
+
+The new `config.js` has pre-built configurations you just need to activate:
+
 ```javascript
-// front/config.js
-window.AppConfig = {
-    api: {
-        baseUrl: 'http://localhost:YOUR_FLASK_PORT/api',  // ⚠️ CHANGE: Match your backend FLASK_PORT
-        timeout: 10000,
-        maxRetries: 3,
-        retryDelay: 1000
-    },
-    app: {
-        name: 'My App - Dev',
-        debug: true,
-        debugConsole: true,  // Shows visual debug console
-    }
-};
+// front/config.js - Just uncomment the one you want:
+
+window.AppConfig = LOCAL_DEV;     // ← For local development
+// window.AppConfig = PRODUCTION; // ← For production
+
+// Or auto-switch:
+// window.AppConfig = window.location.hostname === 'localhost' ? LOCAL_DEV : PRODUCTION;
 ```
 
-### Production Configuration
-```javascript
-// front/config.js
-window.AppConfig = {
-    api: {
-        baseUrl: 'https://my-backend.herokuapp.com/api',  // Your production backend
-        timeout: 10000,
-        maxRetries: 3,
-        retryDelay: 1000
-    },
-    app: {
-        name: 'My App',
-        debug: false,
-        debugConsole: false,  // Disabled for production
-    }
-};
-```
+**LOCAL_DEV includes:**
+- Debug mode enabled
+- Visual debug console
+- Dev user bypass for local development
+- `http://localhost:YOUR_FLASK_PORT/api` URL
 
-### Auto-Switching Configuration
-```javascript
-// front/config.js - Automatically switches between dev/prod
-window.AppConfig = {
-    api: {
-        baseUrl: window.location.hostname === 'localhost'
-            ? 'http://localhost:YOUR_FLASK_PORT/api'  // ⚠️ CHANGE: Use your backend port
-            : 'https://my-backend.herokuapp.com/api',
-    }
-};
-```
+**PRODUCTION includes:**
+- Debug mode disabled
+- No debug console
+- Telegram authentication required
+- `https://your-backend-domain.com/api` URL
 
 ## Development Workflow
 
@@ -171,9 +149,12 @@ window.AppConfig = {
    cd front && npx serve
    ```
 
-3. **Update config.js** for local development:
+3. **Activate LOCAL_DEV** configuration:
    ```javascript
-   baseUrl: 'http://localhost:YOUR_FLASK_PORT/api'  // ⚠️ CHANGE: Match your backend FLASK_PORT
+   // In front/config.js - make sure this line is uncommented:
+   window.AppConfig = LOCAL_DEV;
+
+   // Update YOUR_FLASK_PORT in the LOCAL_DEV section
    ```
 
 4. **Open in browser**: `http://localhost:8000`
@@ -194,10 +175,15 @@ window.AppConfig = {
 
 ### 3. Production Deployment
 
-1. **Update config.js** with production URLs
-2. **Deploy frontend** to hosting platform
-3. **Update backend .env** with frontend URL
-4. **Redeploy backend** with new environment variables
+1. **Switch to PRODUCTION** configuration:
+   ```javascript
+   // In front/config.js - comment LOCAL_DEV, uncomment PRODUCTION:
+   // window.AppConfig = LOCAL_DEV;
+   window.AppConfig = PRODUCTION;
+   ```
+2. **Update production URLs** in PRODUCTION section
+3. **Deploy frontend** to hosting platform
+4. **Update backend .env** with frontend URL
 
 ## Debugging
 

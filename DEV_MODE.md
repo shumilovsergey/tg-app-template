@@ -20,12 +20,10 @@ cd back && docker-compose restart backend
 
 ### Frontend Setup (30 seconds)
 
-1. **Enable dev mode** in `front/config.js`:
+1. **Activate LOCAL_DEV** configuration in `front/config.js`:
 ```javascript
-app: {
-    enableDevMode: true,  // Enable for local development
-    devAuthHeader: 'dev-user-bypass',
-}
+// Make sure this line is uncommented:
+window.AppConfig = LOCAL_DEV;  // LOCAL_DEV has dev mode enabled by default
 ```
 
 2. **Serve frontend locally**:
@@ -73,16 +71,14 @@ cd front && python -m http.server 8000
 
 ### Local Development (with dev mode)
 ```javascript
-// front/config.js
-window.AppConfig = {
-    api: {
-        baseUrl: 'http://localhost:YOUR_FLASK_PORT/api'  // ⚠️ CHANGE: Use your backend FLASK_PORT
-    },
-    app: {
-        enableDevMode: true,  // Enable dev user bypass
-        devAuthHeader: 'dev-user-bypass',
-    }
-};
+// front/config.js - Just uncomment LOCAL_DEV:
+window.AppConfig = LOCAL_DEV;  // ← Uncomment this line
+
+// LOCAL_DEV automatically includes:
+// - enableDevMode: true
+// - debug: true
+// - debugConsole: true
+// - baseUrl: 'http://localhost:YOUR_FLASK_PORT/api'
 ```
 
 ```bash
@@ -93,15 +89,15 @@ DEV_AUTH_HEADER=dev-user-bypass
 
 ### Production (Telegram only)
 ```javascript
-// front/config.js
-window.AppConfig = {
-    api: {
-        baseUrl: 'https://your-backend.com/api'
-    },
-    app: {
-        enableDevMode: false,  // Disable dev mode
-    }
-};
+// front/config.js - Switch to PRODUCTION:
+// window.AppConfig = LOCAL_DEV;  // ← Comment this out
+window.AppConfig = PRODUCTION;    // ← Uncomment this line
+
+// PRODUCTION automatically includes:
+// - enableDevMode: false
+// - debug: false
+// - debugConsole: false
+// - baseUrl: 'https://your-backend-domain.com/api'
 ```
 
 ```bash
