@@ -7,8 +7,8 @@ window.AppConfig = {
     // API Configuration
     api: {
         baseUrl: window.location.hostname === 'localhost'
-            ? 'http://localhost:5000/api'
-            : 'https://arena-back.sh-development.ru/api', // ← Backend API URL with HTTPS and /api path
+            ? 'http://localhost:9002/api'
+            : 'https://your-backend-domain.com/api', // ← CHANGE THIS: Backend API URL with HTTPS and /api path
 
         // Request timeout in milliseconds
         timeout: 10000,
@@ -29,7 +29,6 @@ window.AppConfig = {
         // Enable visual debug console for Telegram WebApp (set to false for production)
         debugConsole: window.location.hostname === 'localhost',
 
-        // Simple single-page app (no page navigation system)
     },
 
     // Telegram WebApp Configuration
@@ -44,7 +43,6 @@ window.AppConfig = {
         showMainButton: false
     },
 
-    // Simple single-page app (no pages configuration needed)
 
     // UI Configuration
     ui: {

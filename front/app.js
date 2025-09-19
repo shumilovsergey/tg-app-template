@@ -172,7 +172,7 @@ class App {
             this.debugLog('📥 Response status:', response.status);
             this.debugLog('📥 Response ok:', response.ok);
 
-            if (!response.ok && response.status !== 201) {
+            if (!response.ok) {
                 const errorText = await response.text();
                 this.debugLog('❌ Error response:', errorText);
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -240,7 +240,7 @@ class App {
 
             this.debugLog('📥 Update response status:', response.status);
 
-            if (!response.ok && response.status !== 201) {
+            if (!response.ok) {
                 const errorText = await response.text();
                 this.debugLog('❌ Update error response:', errorText);
                 throw new Error(`HTTP ${response.status}: ${response.statusText}`);
