@@ -166,6 +166,15 @@ class TelegramApp {
     }
 
     getAuthHeaders() {
+        // If not in Telegram and dev mode is enabled, use dev auth header
+        if (!this.isInTelegram && AppConfig.app.enableDevMode) {
+            return {
+                'X-Dev-Auth': AppConfig.app.devAuthHeader || 'dev-user-bypass',
+                'Content-Type': 'application/json'
+            };
+        }
+
+        // Standard Telegram authentication
         return {
             'X-Telegram-Init-Data': this.initData || '',
             'Content-Type': 'application/json'

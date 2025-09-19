@@ -112,7 +112,7 @@ const updatedUser = result.user;
 // front/config.js
 window.AppConfig = {
     api: {
-        baseUrl: 'http://localhost:9002/api',  // Match your backend port
+        baseUrl: 'http://localhost:YOUR_FLASK_PORT/api',  // ⚠️ CHANGE: Match your backend FLASK_PORT
         timeout: 10000,
         maxRetries: 3,
         retryDelay: 1000
@@ -149,7 +149,7 @@ window.AppConfig = {
 window.AppConfig = {
     api: {
         baseUrl: window.location.hostname === 'localhost'
-            ? 'http://localhost:9002/api'
+            ? 'http://localhost:YOUR_FLASK_PORT/api'  // ⚠️ CHANGE: Use your backend port
             : 'https://my-backend.herokuapp.com/api',
     }
 };
@@ -173,7 +173,7 @@ window.AppConfig = {
 
 3. **Update config.js** for local development:
    ```javascript
-   baseUrl: 'http://localhost:9002/api'  // Match your backend port
+   baseUrl: 'http://localhost:YOUR_FLASK_PORT/api'  // ⚠️ CHANGE: Match your backend FLASK_PORT
    ```
 
 4. **Open in browser**: `http://localhost:8000`

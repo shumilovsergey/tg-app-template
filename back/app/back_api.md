@@ -19,7 +19,7 @@ cp .env.example .env
 ```bash
 # Required - Replace ALL "CHANGE-ME" values
 PROJECT_NAME=my-telegram-app
-FLASK_PORT=9002
+FLASK_PORT=5001  # ⚠️ CHANGE: Choose your port (5001, 8080, 9002, etc.)
 SECRET_KEY=your-secure-secret-key-here
 BOT_TOKEN=123456:ABC-your-bot-token-from-botfather
 FRONTEND_URL=https://yourusername.github.io/your-repo
@@ -47,11 +47,11 @@ python run.py
 ### 3. Health Check
 
 ```bash
-# Test backend is running
-curl http://localhost:9002/health
+# Test backend is running (replace YOUR_PORT with your actual FLASK_PORT)
+curl http://localhost:YOUR_PORT/health
 
 # Test API
-curl http://localhost:9002/api/health
+curl http://localhost:YOUR_PORT/api/health
 ```
 
 ## Environment Variables
@@ -61,7 +61,7 @@ curl http://localhost:9002/api/health
 | Variable | Description | Example |
 |----------|-------------|---------|
 | `PROJECT_NAME` | Your project identifier | `telegram-shop` |
-| `FLASK_PORT` | Port for Flask app | `9002` |
+| `FLASK_PORT` | Port for Flask app | `5001`, `8080`, `9002` (choose any available port) |
 | `SECRET_KEY` | Flask secret key | Generate with: `python -c "import secrets; print(secrets.token_hex(32))"` |
 | `BOT_TOKEN` | Telegram bot token from @BotFather | `123456:ABC-DEF...` |
 | `FRONTEND_URL` | Your frontend deployment URL | `https://yourusername.github.io/repo` |
@@ -79,17 +79,17 @@ These are automatically generated from PROJECT_NAME:
 #### Local Development
 ```bash
 PROJECT_NAME=myapp-dev
-FLASK_PORT=9002
+FLASK_PORT=5001  # ⚠️ CHANGE: Choose available port (5001, 8080, 9002, etc.)
 SECRET_KEY=dev-secret-key-change-in-production
 BOT_TOKEN=123456:ABC-your-bot-token
 FRONTEND_URL=http://localhost:8000
-BACKEND_URL=http://localhost:9002
+BACKEND_URL=http://localhost:5001  # ⚠️ MUST match FLASK_PORT above
 ```
 
 #### Production Deployment
 ```bash
 PROJECT_NAME=myapp-prod
-FLASK_PORT=9002
+FLASK_PORT=5001  # ⚠️ CHANGE: Your chosen port or platform default
 SECRET_KEY=super-secure-production-key
 BOT_TOKEN=123456:ABC-your-bot-token
 FRONTEND_URL=https://yourusername.github.io/myapp
@@ -243,7 +243,7 @@ docker-compose exec redis redis-cli FLUSHALL
 3. **Set environment variables**:
    ```bash
    heroku config:set PROJECT_NAME=your-app
-   heroku config:set FLASK_PORT=9002
+   heroku config:set FLASK_PORT=5001  # ⚠️ Use your chosen port
    heroku config:set SECRET_KEY=your-secret-key
    heroku config:set BOT_TOKEN=your-bot-token
    heroku config:set FRONTEND_URL=https://yourusername.github.io/repo
@@ -359,8 +359,8 @@ Redis is configured with:
 
 #### Port Already in Use
 ```bash
-# Error: Port 9002 is already in use
-# Solution: Change FLASK_PORT in .env to a different port
+# Error: Port XXXX is already in use
+# Solution: Change FLASK_PORT in .env to a different available port (e.g., 5001, 8080, 9002)
 ```
 
 #### Redis Connection Failed
@@ -427,14 +427,14 @@ python -m pytest tests/ --cov=app
 ### API Testing
 
 ```bash
-# Test with curl
-curl -X POST http://localhost:9002/api/user/get_data \
+# Test with curl (replace YOUR_PORT with your FLASK_PORT)
+curl -X POST http://localhost:YOUR_PORT/api/user/get_data \
   -H "Content-Type: application/json" \
   -H "X-Telegram-Init-Data: query_id=..." \
   -d '{}'
 
 # Test with httpie
-http POST localhost:9002/api/user/get_data \
+http POST localhost:YOUR_PORT/api/user/get_data \
   Content-Type:application/json \
   X-Telegram-Init-Data:query_id=... \
   < test_data.json
@@ -446,11 +446,11 @@ http POST localhost:9002/api/user/get_data \
 # Install hey
 go install github.com/rakyll/hey@latest
 
-# Test API endpoint
+# Test API endpoint (replace YOUR_PORT with your FLASK_PORT)
 hey -n 1000 -c 10 -m POST \
   -H "Content-Type: application/json" \
   -d '{}' \
-  http://localhost:9002/api/user/get_data
+  http://localhost:YOUR_PORT/api/user/get_data
 ```
 
 ## Monitoring and Logging

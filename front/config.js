@@ -7,7 +7,7 @@ window.AppConfig = {
     // API Configuration
     api: {
         baseUrl: window.location.hostname === 'localhost'
-            ? 'http://localhost:9002/api'
+            ? 'http://localhost:YOUR_FLASK_PORT/api' // ← CHANGE THIS: Replace YOUR_FLASK_PORT with your actual backend port
             : 'https://your-backend-domain.com/api', // ← CHANGE THIS: Backend API URL with HTTPS and /api path
 
         // Request timeout in milliseconds
@@ -28,6 +28,10 @@ window.AppConfig = {
 
         // Enable visual debug console for Telegram WebApp (set to false for production)
         debugConsole: window.location.hostname === 'localhost',
+
+        // Development mode - bypasses Telegram auth when not in Telegram
+        enableDevMode: window.location.hostname === 'localhost',
+        devAuthHeader: 'dev-user-bypass',
 
     },
 
@@ -83,8 +87,18 @@ window.AppConfig.logError = function(...args) {
         console.warn('⚠️ Please update the backend URL in config.js');
     }
 
+    if (config.api.baseUrl.includes('YOUR_FLASK_PORT')) {
+        console.warn('⚠️ Please replace YOUR_FLASK_PORT with your actual backend port (e.g., 5001, 8080, 9002)');
+    }
+
     // Log the configured backend URL for debugging
     console.log('🌐 Backend URL configured:', config.api.baseUrl);
 
     config.log('Configuration loaded:', config);
 })();
+
+// ⚠️ IMPORTANT: PORT CONFIGURATION REMINDER
+// If you see "YOUR_FLASK_PORT" in the console log above:
+// 1. Replace YOUR_FLASK_PORT with your actual backend port (e.g., 5001, 8080, 9002)
+// 2. Make sure it matches the FLASK_PORT in your backend .env file
+// 3. Choose an available port to avoid conflicts

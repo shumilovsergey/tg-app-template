@@ -14,6 +14,12 @@ cp back/.env.example back/.env
 # ⚠️ CRITICAL: Edit back/.env and set 6 required values
 # APPLICATION WILL NOT START WITH PLACEHOLDER VALUES
 
+# ⚠️ IMPORTANT: CHOOSE YOUR PORT
+# This template uses placeholder ports like "YOUR_FLASK_PORT" - you MUST:
+# 1. Choose an available port (e.g., 5001, 8080, 9002)
+# 2. Set FLASK_PORT=your_chosen_port in back/.env
+# 3. Update frontend config.js to use same port
+
 # Production backend deployment
 cd back && docker-compose up -d --build
 
@@ -33,9 +39,9 @@ cd back && docker-compose down
 # Clean everything (including volumes)
 cd back && docker-compose down -v --remove-orphans
 
-# Health checks (replace PORT with your configured FLASK_PORT)
-curl http://localhost:PORT/health  # Backend health check
-curl http://localhost:PORT/api/health  # API health check
+# Health checks (replace YOUR_PORT with your configured FLASK_PORT)
+curl http://localhost:YOUR_PORT/health  # Backend health check
+curl http://localhost:YOUR_PORT/api/health  # API health check
 ```
 
 ## Project Structure
@@ -108,11 +114,11 @@ Copy `back/.env.example` to `back/.env` and configure **6 REQUIRED VALUES**:
 
 **Required Configuration (Only 6 values to set!):**
 1. `PROJECT_NAME` - Your project identifier (e.g., myapp, telegram-shop)
-2. `FLASK_PORT` - Unique port (e.g., 5001, 5002, 8080)
+2. `FLASK_PORT` - ⚠️ CHOOSE YOUR PORT (e.g., 5001, 8080, 9002) - avoid conflicts!
 3. `SECRET_KEY` - Generate secure secret key
 4. `BOT_TOKEN` - Get from @BotFather
 5. `FRONTEND_URL` - Your frontend deployment URL
-6. `BACKEND_URL` - Your backend domain
+6. `BACKEND_URL` - Your backend domain (must match FLASK_PORT for local dev)
 
 **Note**: CORS is disabled - all origins are allowed since Telegram cryptographic validation provides security.
 

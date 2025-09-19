@@ -3,13 +3,19 @@
  *
  * This file helps developers quickly set up environment variables for different deployment scenarios.
  * Copy the appropriate configuration section and update your config.js file.
+ *
+ * ⚠️ IMPORTANT: PORT CONFIGURATION
+ * This template uses "YOUR_FLASK_PORT" as a placeholder - you MUST replace it with:
+ * - Your actual backend port (e.g., 5001, 8080, 9002)
+ * - Same port as FLASK_PORT in your backend .env file
+ * - An available port to avoid conflicts
  */
 
 // ===== DEVELOPMENT CONFIGURATION =====
 // Use this when developing locally with local backend
 const DEVELOPMENT_CONFIG = {
     api: {
-        baseUrl: 'http://localhost:9002/api',  // Change port to match your backend .env FLASK_PORT
+        baseUrl: 'http://localhost:YOUR_FLASK_PORT/api',  // ⚠️ CHANGE PORT: Replace YOUR_FLASK_PORT with your backend .env FLASK_PORT
         timeout: 10000,
         maxRetries: 3,
         retryDelay: 1000
@@ -18,6 +24,8 @@ const DEVELOPMENT_CONFIG = {
         name: 'Your App Name - Dev',
         debug: true,
         debugConsole: true,  // Enable visual debug console
+        enableDevMode: true,  // Enable dev user bypass for local development
+        devAuthHeader: 'dev-user-bypass',
     },
     telegram: {
         autoExpand: true,
@@ -39,6 +47,8 @@ const PRODUCTION_CONFIG = {
         name: 'Your App Name',
         debug: false,
         debugConsole: false,  // Disable debug console in production
+        enableDevMode: false,  // Disable dev mode in production
+        devAuthHeader: 'dev-user-bypass',
     },
     telegram: {
         autoExpand: true,
@@ -60,6 +70,8 @@ const STAGING_CONFIG = {
         name: 'Your App Name - Staging',
         debug: true,
         debugConsole: true,  // Enable debug console for testing
+        enableDevMode: false,  // Disable dev mode in staging (use real Telegram auth)
+        devAuthHeader: 'dev-user-bypass',
     },
     telegram: {
         autoExpand: true,
@@ -74,7 +86,7 @@ const STAGING_CONFIG = {
 const ARENA_EXAMPLE_CONFIG = {
     api: {
         baseUrl: window.location.hostname === 'localhost'
-            ? 'http://localhost:9002/api'
+            ? 'http://localhost:9002/api'  // Arena uses port 9002 (real example)
             : 'https://arena-back.sh-development.ru/api',
         timeout: 10000,
         maxRetries: 3,
@@ -84,6 +96,8 @@ const ARENA_EXAMPLE_CONFIG = {
         name: 'Arena LoL',
         debug: window.location.hostname === 'localhost',
         debugConsole: window.location.hostname === 'localhost',
+        enableDevMode: window.location.hostname === 'localhost',
+        devAuthHeader: 'dev-user-bypass',
     },
     telegram: {
         autoExpand: true,
@@ -96,7 +110,7 @@ const ARENA_EXAMPLE_CONFIG = {
 const GITHUB_PAGES_CONFIG = {
     api: {
         baseUrl: window.location.hostname === 'localhost'
-            ? 'http://localhost:9002/api'
+            ? 'http://localhost:YOUR_FLASK_PORT/api'  // ⚠️ CHANGE: Use your actual FLASK_PORT
             : 'https://api.your-project.com/api',
         timeout: 10000,
         maxRetries: 3,
@@ -106,6 +120,8 @@ const GITHUB_PAGES_CONFIG = {
         name: 'Your Project Name',
         debug: window.location.hostname === 'localhost',
         debugConsole: window.location.hostname === 'localhost',
+        enableDevMode: window.location.hostname === 'localhost',
+        devAuthHeader: 'dev-user-bypass',
     },
     telegram: {
         autoExpand: true,
@@ -158,6 +174,10 @@ window.AppConfig.logError = function(...args) {
         console.warn('⚠️ Please update the backend URL in config.js');
     }
 
+    if (config.api.baseUrl.includes('YOUR_FLASK_PORT')) {
+        console.warn('⚠️ Please replace YOUR_FLASK_PORT with your actual backend port');
+    }
+
     console.log('🌐 Backend URL configured:', config.api.baseUrl);
     config.log('Configuration loaded:', config);
 })();
@@ -168,13 +188,13 @@ Make sure your backend .env file has matching URLs:
 
 For DEVELOPMENT:
 - FRONTEND_URL=http://localhost:8000 (or your local frontend URL)
-- BACKEND_URL=http://localhost:9002 (should match your FLASK_PORT)
-- FLASK_PORT=9002 (port for backend service)
+- BACKEND_URL=http://localhost:YOUR_FLASK_PORT (⚠️ MUST match your FLASK_PORT)
+- FLASK_PORT=YOUR_FLASK_PORT (⚠️ CHANGE: choose your port, e.g., 5001, 9002, 8080)
 
 For PRODUCTION:
 - FRONTEND_URL=https://yourusername.github.io/your-repo (your frontend deployment URL)
 - BACKEND_URL=https://your-backend-domain.com (your backend deployment URL)
-- FLASK_PORT=9002 (or whatever port your hosting platform uses)
+- FLASK_PORT=YOUR_FLASK_PORT (hosting platforms often auto-assign ports)
 
 STEP 4: Verify Setup
 1. Check console for "🌐 Backend URL configured: ..." message
@@ -182,11 +202,24 @@ STEP 4: Verify Setup
 3. Test API calls in browser developer tools
 4. Enable debug console (debugConsole: true) for visual debugging
 
-STEP 5: Common Issues
+STEP 5: Enable Development Mode (Optional)
+For local development without Telegram:
+
+1. Set enableDevMode: true in your config
+2. Set ENABLE_DEV_USER=true in your backend .env file
+3. Now you can develop locally without Telegram authentication
+
+The frontend will automatically use dev auth headers when:
+- Running on localhost
+- enableDevMode is true
+- Not running inside Telegram
+
+STEP 6: Common Issues
 - Make sure backend URL includes "/api" path
 - Use HTTPS for production (required by Telegram)
 - Verify CORS is properly configured on backend
 - Check that backend is accessible from frontend domain
+- For dev mode: ensure backend has ENABLE_DEV_USER=true
 
 QUICK START EXAMPLES:
 
