@@ -1,6 +1,6 @@
-# Environment configuration
 .env
+data
 
-# Redis data directory
 redis_data/
 
+redis_data/dump.rdb
